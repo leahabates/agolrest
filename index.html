@@ -23,22 +23,52 @@
     require([
       "esri/config",
       "esri/Map", 
-      "esri/views/MapView"
-    ], function(esriConfig, Map, MapView) {   
-
-      esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurKfn8xs-sWsNswOMg-gicKExeOv8LqtW2-eXX8sChmQJp4x3jD2uBPHxjWmO3fI1MQBAVeBl6VrxvF186jjKmG_LWli4wZNwXUZORO17pGQ432BSycHoLd6yAMjl44SbH5qtpRSMS43nREA6-DFo9dMyy_DzxHf3sYdLtbNhLdppCmVwp9UZIU1M_c0_DFpQAWFVK3KWA6Z97IAm1mgtQ6S5dAkxc9iP5a1tZBiZY7vbAT1_gRtlmFxO";
+      "esri/views/MapView",
+      "esri/widgets/BasemapGallery",
+      "esri/widgets/Locate",
+      "esri/widgets/Search"
+    ], function(esriConfig, Map, MapView, BasemapGallery, Locate, Search) {  
+  
+      esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurKfn8xs-sWsNswOMg-gicKExeOv8LqtW2-eXX8sChmQJp4x3jD2uBPHxjWmO3fI1MQBAVeBl6VrxvF186jjKmG_LWli4wZNwXUZORO17pGQ432BSycHoLd6yAMjl44SbH5qtpRSMS43nREA6-DFo9dMyy_DzxHf3sYdLtbNhLdppCmVwp9UZIU1M_c0_DFpQAWFVK3KWA6Z97IAm1mgtQ6S5dAkxc9iP5a1tZBiZY7vbAT1_gRtlmFxO"; // your full API key
       const map = new Map({ 
-        basemap: "streets" // Basemap layer service 
+        basemap: "arcgis-midcentury"
       });
-
+  
       const view = new MapView({
         map: map,
-        center: [-97.7431, 30.2672], // Longitude, latitude
-        zoom: 13, // Zoom level
-        container: "viewDiv" // Div element
+        center: [-89.3941, 43.0747],
+        zoom: 14,
+        container: "viewDiv"
       });
+  
+      const basemapGallery = new BasemapGallery({
+        view: view
+      });
+  
+      view.ui.add(basemapGallery, {
+        position: "top-right"
+      });
+
+      const locateWidget = new Locate({
+        view: view
+      });
+
+      view.ui.add(locateWidget,{
+        position: "top-left"
+      });
+
+      const searchWidget = new Search ({
+        view: view
+      });
+
+      view.ui.add(searchWidget, {
+        position: "top-left",
+        index: 2
+      });
+  
     });  
-   </script>
+  </script>
+  
 
 </head>
 <body>
