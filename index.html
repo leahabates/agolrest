@@ -18,23 +18,28 @@
     width: 100%;  
     }  
     </style> 
+  <div id="viewDiv"></div>
   <!-- adding the modules needed for a full screen map app-->
   <script>  
     require([
       "esri/config",
       "esri/Map", 
       "esri/views/MapView",
-      "esri/widgets/BasemapGallery",
-      "esri/widgets/Expand",
-      "esri/widgets/Locate",
-      "esri/widgets/Search"
-    ], function(esriConfig, Map, MapView, BasemapGallery,Expand, Locate, Search) {  
+
+      //adding the modules for graphic and graphic layer
+      "esri/Graphic",
+      "esri/layers/GraphicsLayer",
+
+      // adding the module foe the feature layer
+      "esri/layers/FeatureLayer"
+    ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, FeatureLayer) {  
   
       esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurKfn8xs-sWsNswOMg-gicKExeOv8LqtW2-eXX8sChmQJp4x3jD2uBPHxjWmO3fI1MQBAVeBl6VrxvF186jjKmG_LWli4wZNwXUZORO17pGQ432BSycHoLd6yAMjl44SbH5qtpRSMS43nREA6-DFo9dMyy_DzxHf3sYdLtbNhLdppCmVwp9UZIU1M_c0_DFpQAWFVK3KWA6Z97IAm1mgtQ6S5dAkxc9iP5a1tZBiZY7vbAT1_gRtlmFxO"; // your full API key
       const map = new Map({ 
         basemap: "arcgis-midcentury"
       });
   
+      //centered around Madison, Wi
       const view = new MapView({
         map: map,
         center: [-89.3941, 43.0747],
@@ -42,43 +47,153 @@
         container: "viewDiv"
       });
   
-      const basemapGallery = new BasemapGallery({
-        view: view
-      });
-  
+      //adding the constructor for the graphicslayer
+      const graphicsLayer = new GraphicsLayer();
+      map.add(graphicsLayer);
 
-      const bgExpand = new Expand({
-        view: view,
-        content: basemapGallery,
-        expandIconClass: "esri-icon-basemap",
-        expandTooltip: "Basemap"
+      const point = {
+        type: "point",
+        longitude: -89.401111,  //lon and lat of science hall
+        latitude: 43.075833
+      };
+
+      //defining the marker style
+      const simpleMarkerSymbol = {
+        type: "simple-marker",
+        style: "diamond",
+        color: [139,0,0], //color of science hall
+        outline: {
+          color: [255, 255, 255], //white
+          width:1
+        }
+      };
+
+      //defining popup porperties
+      const popupTemplate = {
+        title: "{Name}",
+        content: "{Description}"
+      };
+
+      const attributes = {
+        Name: "Science Hall",
+        Description: "Home of UW-Madison's Geography Department and State Cartography Office"
+      }
+
+      // create the point
+      const pointGraphic = new Graphic ({
+        geometry: point,
+        symbol: simpleMarkerSymbol,
+        attributes: attributes,
+        popupTemplate: popupTemplate
       });
 
-      view.ui.add(bgExpand, {
-        position: "top-right"
+      //add the point to the graphic layer
+      graphicsLayer.add(pointGraphic)
+
+      // polyline
+      const polyline = {
+        type: "polyline",
+        paths: [
+          [-89.40064298335307, 43.0709101829733],
+          [-89.40044, 43.07316],
+          [-89.40054, 43.07582]
+        ]
+      };
+
+      const lineSymbol = {
+        type: "simple-line",
+        color: [0, 0, 0, 0.5],
+        width: 2
+      };
+
+      const lineGraphic = new Graphic({
+        geometry: polyline,
+        symbol: lineSymbol,
+        attributes: {
+          Name: "Campus Walk",
+          Description: "Walk I would have taken to get to Science hall from Freshman year Dorm"
+        },
+        popupTemplate: {
+          title: "{Name}",
+          content: "{Description}"
+        }
       });
 
-      const locateWidget = new Locate({
-        view: view
+      graphicsLayer.add(lineGraphic)
+
+      // polygon
+      const polygon = {
+        type: "polygon",
+        rings: [
+          [-89.38414, 43.07624],
+          [-89.38624, 43.07475],
+          [-89.38423, 43.07317],
+          [-89.38216, 43.07468],
+          [-89.38414, 43.07624] // close the ring
+        ]
+      };
+
+      const polygonSymbol = {
+        type: "simple-fill",
+        color: [0, 0, 222, 0.1],
+        outline: {
+          color: [0, 0, 0],
+          width: 1
+        }
+      };
+
+      const polygonGraphic = new Graphic({
+        geometry: polygon,
+        symbol: polygonSymbol,
+        attributes: {
+          Name: "Capitol Square",
+          Description: "'The Square' is the heart of downtown Madison, a destination for shopping, food, and entertainment."
+        },
+        popupTemplate: {
+          title: "{Name}",
+          content: "{Description}"
+        }
       });
 
-      view.ui.add(locateWidget,{
-        position: "top-left"
+      graphicsLayer.add(polygonGraphic);
+
+      // Define a pop-up for usaeduLayer
+      const popupAltFuels = {
+        "title": "Alternative Fuels",
+        "content": "<b>Name:</b> {Station_Name}<br><b>Fuel Type:</b> {Fuel_Type}<br><b>Address:</b> {Address}<br><b>Payment Methods:</b> {Payment_Methods}<br><b>Hours:</b> {Access_Hours}<br>"
+}
+
+      const altFulesLayer = new FeatureLayer({
+        url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/Alternate_Fuel/FeatureServer",
+
+        //adding popup
+        outField: ["Station_Name", "Fuel_Type", "Address", "Payment_Methods", "Access_Hours"],
+        popupTemplate: popupAltFuels
+      });
+      
+      map.add(altFulesLayer);
+
+      const airportRenderer = {
+        "type": "simple",
+        "symbol": {
+          "type": "picture-marker",
+          "url": "https://sounny.github.io/agol/outline_local_airport_black_24dp.png",
+          "width": "18px",
+          "height": "18px"
+        }
+      }
+
+      const usAirports = new FeatureLayer({
+        url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/US_Airports_Bates/FeatureServer",
+        renderer : airportRenderer // callingn the icon
+
       });
 
-      const searchWidget = new Search ({
-        view: view
-      });
-
-      view.ui.add(searchWidget, {
-        position: "top-left",
-        index: 2
-      });
+      map.add(usAirports);
   
     });  
   </script>
   
-
 </head>
 <body>
   <!-- this displays the map-->
