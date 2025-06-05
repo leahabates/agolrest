@@ -31,8 +31,14 @@
       "esri/layers/GraphicsLayer",
 
       // adding the module foe the feature layer
-      "esri/layers/FeatureLayer"
-    ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, FeatureLayer) {  
+      "esri/layers/FeatureLayer",
+
+      // adding editor widget
+      "esri/widgets/Editor",
+
+      // add legend
+      "esri/widgets/Legend"
+    ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, FeatureLayer, Editor, Legend) {  
   
       esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurKfn8xs-sWsNswOMg-gicKExeOv8LqtW2-eXX8sChmQJp4x3jD2uBPHxjWmO3fI1MQBAVeBl6VrxvF186jjKmG_LWli4wZNwXUZORO17pGQ432BSycHoLd6yAMjl44SbH5qtpRSMS43nREA6-DFo9dMyy_DzxHf3sYdLtbNhLdppCmVwp9UZIU1M_c0_DFpQAWFVK3KWA6Z97IAm1mgtQ6S5dAkxc9iP5a1tZBiZY7vbAT1_gRtlmFxO"; // your full API key
       const map = new Map({ 
@@ -246,7 +252,82 @@
     
     map.add(usHeliports);
 
-  
+    //add rendering 
+    const myAirportRenderer= {
+      type: "simple",
+      symbol: {
+        type: "picture-marker",
+        url: "https://leahabates.github.io/agol/flight_24dp_1F1F1F.png",
+      }
+    };
+
+    //add lables 
+    const myAirportLables= {
+      symbol: {
+        type: "text",
+        color: "#000",
+        font:{
+          size: "11px",
+          family: "Noto Sans",
+          weight: "normal"
+        }
+      },
+      labelPlacement: "below-center",
+      labelExpressionInfo: {
+        expression: "$feature.AirportCode"
+      }
+    }
+
+    //add the const for the new feature layer
+    const myAirport = new FeatureLayer ({
+      url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/My_Airports_Bates/FeatureServer",
+
+      //adding the popup here
+      outField: ["AirportCode"],
+      // add renderer
+      renderer: myAirportRenderer,
+      labelingInfo: [myAirportLables],
+    });
+
+    map.add(myAirport);
+
+    //set point layers layerInfo
+    const pointInfo = {
+      layer: myAirport
+    }
+
+    //begin editor constructor
+    const editor = new Editor({
+      view: view,
+      layerInfo: [pointInfo],
+    }); //end of editor constructor
+
+    view.ui.add(editor, "top-right");
+
+    const legend = new Legend ({
+      view: view,
+      layerInfos: [
+        {
+          layer: myAirport,
+          title: "My Airports"
+        },
+        {
+          layer: usAirports,
+          title: "US Airports"
+        },
+        {
+          layer: usHeliports,
+          title: "US Heliports"
+        },
+        {
+          layer: altFulesLayer,
+          title: "Alternative Fuel Station"
+        }
+      ]
+    });
+
+    view.ui.add(legend, "bottom-right");
+
     });  
   </script>
   
